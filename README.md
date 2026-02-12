@@ -1,4 +1,4 @@
-# Gemini CLI와 Antigravity: 통합 종합 매뉴얼
+# Gemini CLI와 Antigravity를 함께 쓰기 종합 메뉴얼
 
 > **작성일:** 2026-02-12  
 > **대상:** Gemini CLI (v0.3.x+), Google Antigravity IDE  
