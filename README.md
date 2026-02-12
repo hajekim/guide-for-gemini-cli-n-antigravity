@@ -9,16 +9,16 @@
 ## 목차
 
 1. [개요](#1-개요)
-2. [GEMINI.md - 컨텍스트/메모리 파일](#2-geminimd---컨텍스트메모리-파일)
+2. [GEMINI.md - 컨텍스트 및 메모리 파일](#2-geminimd---컨텍스트-및-메모리-파일)
 3. [settings.json - 동작 설정 및 에이전트 모드](#3-settingsjson---동작-설정-및-에이전트-모드)
 4. [Auth 설정 - 인증 체계](#4-auth-설정---인증-체계)
 5. [.env 설정 - 환경변수 관리](#5-env-설정---환경변수-관리)
-6. [Rules (규칙) - 항상 적용되는 가이드라인](#6-rules-규칙---항상-적용되는-가이드라인)
-7. [Workflows (워크플로우) - 사용자 트리거 매크로](#7-workflows-워크플로우---사용자-트리거-매크로)
+6. [Rules - 항상 적용되는 가이드라인](#6-rules---항상-적용되는-가이드라인)
+7. [Workflows - 사용자 트리거 매크로](#7-workflows---사용자-트리거-매크로)
 8. [Agent Skills - 핵심 상호호환 계층](#8-agent-skills---핵심-상호호환-계층)
-9. [MCP(Model Context Protocol) - 외부 통합](#9-mcpmodel-context-protocol---외부-통합)
-10. [Agent (에이전트) 아키텍처 및 특수 에이전트](#10-agent-에이전트-아키텍처-및-특수-에이전트)
-11. [세션 및 작업 관리 (Session & Tasks)](#11-세션-및-작업-관리-session--tasks)
+9. [MCP - 외부 통합](#9-mcp---외부-통합)
+10. [Agent 아키텍처 및 특수 에이전트](#10-agent-아키텍처-및-특수-에이전트)
+11. [세션 및 작업 관리](#11-세션-및-작업-관리)
 12. [상호호환성 종합 매핑](#12-상호호환성-종합-매핑)
 13. [통합 실전 구성 예시 및 팁](#13-통합-실전-구성-예시-및-팁)
 14. [참고 자료](#14-참고-자료)
@@ -27,7 +27,7 @@
 
 ## 1. 개요
 
-Gemini CLI는 터미널 기반 AI 에이전트이고, Antigravity는 VSCode 포크 기반의 에이전트 중심 IDE입니다. 두 도구는 동일한 **Gemini 에이전트 코어(Core)** 엔진을 공유하며, 핵심적인 도구 시스템과 설정 로직은 호환되지만 사용자의 작업 환경에 따라 제공되는 인터페이스와 관리 방식에서 차이가 있습니다. 핵심은 **Agent Skills라는 오픈 표준(agentskills.io)을 통해 양 플랫폼 간 상호호환이 가능하다는 점입니다.**
+Gemini CLI는 터미널 기반 AI 에이전트이고, Antigravity는 VSCode 포크 기반의 에이전트 중심 IDE입니다. 두 도구는 동일한 **Gemini 에이전트 코어** 엔진을 공유하며, 핵심적인 도구 시스템과 설정 로직은 호환되지만 사용자의 작업 환경에 따라 제공되는 인터페이스와 관리 방식에서 차이가 있습니다. 핵심은 **Agent Skills라는 오픈 표준(agentskills.io)을 통해 양 플랫폼 간 상호호환이 가능하다는 점입니다.**
 
 | 항목 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
@@ -39,7 +39,7 @@ Gemini CLI는 터미널 기반 AI 에이전트이고, Antigravity는 VSCode 포�
 
 ---
 
-## 2. GEMINI.md - 컨텍스트/메모리 파일
+## 2. GEMINI.md - 컨텍스트 및 메모리 파일
 
 GEMINI.md는 양 플랫폼에서 **항상 로드되는 지속적 컨텍스트 파일**로, 프로젝트별 지시사항·코딩 스타일·아키텍처 규칙을 정의합니다. 에이전트는 대화 시작 시 여러 위치의 파일을 찾아 하나의 시스템 지침으로 결합합니다.
 
@@ -48,15 +48,16 @@ GEMINI.md는 양 플랫폼에서 **항상 로드되는 지속적 컨텍스트 �
 | 계층 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
 | **전역** | `~/.gemini/GEMINI.md` | `~/.gemini/GEMINI.md` |
-| **프로젝트** | 프로젝트 루트 + 상위 디렉토리 (`.git`까지) | 전역 Rule로 적용됩니다. |
-| **서브디렉토리** | 하위 디렉토리 자동 스캔 (`.gitignore` 존중) | 지원하지 않습니다. |
+| **프로젝트** | 프로젝트 루트 + 상위 디렉토리 (`.git`까지) | 전역 규칙으로 적용됩니다. |
+| **서브디렉토리** | 하위 디렉토리 GEMINI.md 자동 스캔 (`.gitignore` 존중) | 지원하지 않습니다. |
 | **커스텀 이름** | `context.fileName`으로 변경 가능합니다. (예: `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`) | GEMINI.md로 고정되어 있습니다. |
 
 > **💡 프로젝트 내 GEMINI.md 배치 팁**
 > *   **표준 위치 (권장)**: 프로젝트 루트 디렉토리에 배치합니다. 에이전트가 별도 설정 없이 즉시 파일을 인식하여 적용합니다.
 > *   **통합 관리 위치**: 설정을 한곳에 모으기 위해 `.gemini/GEMINI.md` 경로를 사용할 수도 있습니다. 이 경우 `settings.json` 내의 `context.fileName`에 해당 경로를 명시해야 에이전트가 올바르게 로드할 수 있습니다. (13.1 통합 디렉토리 구조 참조)
-> *   **계층적 로드**: 전역 → 프로젝트 루트 → 현재 디렉토리 순으로 로드되며, 하위 폴더의 지침이 상위의 지침을 구체화하거나 덮어쓸 수 있습니다.
-> *   **모듈화**: `@filename.md` 구문을 사용하여 공통 컨벤션이나 아키텍처 문서를 여러 프로젝트에서 가져와 사용할 수 있습니다.
+
+*   **계층적 로드**: 전역 → 프로젝트 루트 → 현재 디렉토리 순으로 로드되며, 하위 폴더의 지침이 상위의 지침을 구체화하거나 덮어쓸 수 있습니다.
+*   **모듈화**: `@filename.md` 구문을 사용하여 공통 컨벤션이나 아키텍처 문서를 여러 프로젝트에서 가져와 사용할 수 있습니다.
 
 ### 2.2 Gemini CLI의 GEMINI.md 관리 명령어
 
@@ -92,11 +93,11 @@ GEMINI.md는 양 플랫폼에서 **항상 로드되는 지속적 컨텍스트 �
 ### 2.4 [Tip] 작성 언어 선택 가이드 (Korean vs English)
 `GEMINI.md` 작성 시 언어 선택은 모델의 성능과 유지보수 효율성에 영향을 미칩니다.
 
-*   **영문(English)의 장점**: 기술적 정밀도가 높고 모델이 지시 사항을 더 강력하게 수용하며, 토큰 효율성이 좋습니다. (핵심 제약 조건 작성에 권장합니다.)
-*   **국문(Korean)의 장점**: 팀 내 소통이 원활하고 비즈니스 로직 및 도메인 지식을 상세히 설명하기에 유리합니다. (맥락 공유에 권장합니다.)
-*   **권장하는 하이브리드(Hybrid) 방식**:
-    - 기술적 용어, 핵심 명령어, 제약 조건(Constraints)은 **영문**으로 작성합니다.
-    - 이에 대한 구체적인 배경 설명과 맥락(Context)은 **국문**으로 작성합니다.
+*   **영문 작성의 장점**: 기술적 정밀도가 높고 모델이 지시 사항을 더 강력하게 수용하며, 토큰 효율성이 좋습니다. (핵심 제약 조건 작성에 권장합니다.)
+*   **국문 작성의 장점**: 팀 내 소통이 원활하고 비즈니스 로직 및 도메인 지식을 상세히 설명하기에 유리합니다. (맥락 공유에 권장합니다.)
+*   **권장하는 하이브리드 방식**:
+    - 기술적 용어, 핵심 명령어, 제약 조건은 **영문**으로 작성합니다.
+    - 이에 대한 구체적인 배경 설명과 맥락은 **국문**으로 작성합니다.
 
 ---
 
@@ -159,7 +160,7 @@ settings.json은 **Gemini CLI 전용** 설정 체계입니다. Antigravity는 �
 }
 ```
 
-#### `modelConfigs` — 모델 프리셋/별칭
+#### `modelConfigs` — 모델 프리셋 및 별칭
 
 20개 이상의 사전 정의 모델 프리셋이 포함되어 있으며, `customAliases`로 확장 가능합니다.
 
@@ -460,8 +461,8 @@ settings.json은 **Gemini CLI 전용** 설정 체계입니다. Antigravity는 �
 #### **[주요 설정 포인트 설명]**
 *   **일반 및 모델 (`general`, `model`)**: 최신 기능을 미리 사용해 볼 수 있도록 `previewFeatures`를 활성화하고, 최적의 성능을 위해 `gemini-2.5-pro` 모델을 세션 제한 없이 사용하도록 구성합니다.
 *   **컨텍스트 및 도구 (`context`, `tools`)**: 프로젝트의 핵심 지침인 `GEMINI.md`를 우선 로드하며, 보안을 위해 **Docker 샌드박스** 내에서 `git` 관련 도구만 명시적으로 허용하도록 설정하여 안전한 자동화를 도모합니다.
-*   **실험적 기능 및 스킬 (`experimental`, `skills`)**: 차세대 핵심 기능인 **Agent Skills**를 활성화하여 에이전트의 전문성을 높입니다. 단, 서브에이전트(`enableAgents`) 기능은 예기치 못한 도구 실행을 방지하기 위해 비활성화 상태를 유지합니다.
-*   **확장성 (`hooks`, `mcpServers`)**: 세션 시작 시 환경을 점검하거나 도구 실행 전후에 개입할 수 있는 `hooks` 시스템과, 외부 서비스를 연동할 수 있는 `mcpServers`의 기본 구조를 포함하고 있습니다.
+*   **실험적 기능 및 스킬 (`experimental`, `skills`)**: 차세대 핵심 기능인 **Agent Skills**를 활성화하여 에이전트의 전문성을 높입니다. 단, 서브에이전트 기능은 예기치 못한 도구 실행을 방지하기 위해 비활성화 상태를 유지합니다.
+*   **확장성 (`hooks`, `mcpServers`)**: 세션 시작 시 환경을 점검하거나 도구 실행 전후에 개입할 수 있는 `hooks` 시스템과, 외부 서비스를 연동할 수 있는 MCP 서버의 기본 구조를 포함하고 있습니다.
 
 ### 3.4 환경변수 참조 문법
 
@@ -477,9 +478,9 @@ settings.json 내 문자열 값에서 `$VAR_NAME` 또는 `${VAR_NAME}` 구문으
 }
 ```
 
-### 3.5 Antigravity의 대응 및 Agent Modes (에이전트 모드)
+### 3.5 Antigravity의 대응 및 에이전트 모드
 
-Antigravity는 별도의 settings.json 없이 **IDE 내 Customizations UI**에서 Rules/Workflows/Skills를 관리합니다. MCP 서버 설정, 모델 선택 등은 IDE 설정 패널에서 처리합니다. 특히 Antigravity에서는 에이전트의 페르소나를 결정하는 **Agent Modes** 설정이 핵심이며, IDE 하단 상태 표시줄의 모드 선택기 또는 `settings.json` 내 `agent.mode` 필드를 통해 전환할 수 있습니다.
+Antigravity는 별도의 settings.json 없이 **IDE 내 커스터마이징 UI**에서 규칙/워크플로우/스킬을 관리합니다. MCP 서버 설정, 모델 선택 등은 IDE 설정 패널에서 처리합니다. 특히 Antigravity에서는 에이전트의 페르소나를 결정하는 **에이전트 모드** 설정이 핵심이며, IDE 하단 상태 표시줄의 모드 선택기 또는 `settings.json` 내 `agent.mode` 필드를 통해 전환할 수 있습니다.
 
 *   **Code 모드**: 테스트 주도 개발(TDD), 버그 수정, 신규 기능 구현 등 실제 코드 작성에 최적화된 모드입니다. 에이전트가 파일 수정 도구를 적극적으로 사용합니다.
 *   **Architect 모드**: 대규모 리팩토링 계획 수립, 시스템 설계 분석, 의존성 맵 작성 등에 사용됩니다. 코드 수정보다는 구조적 제안에 집중합니다.
@@ -511,8 +512,8 @@ Gemini CLI는 크게 세 가지 계열의 인증을 지원합니다.
 *   `GOOGLE_CLOUD_LOCATION`: GCP 리전 (예: `us-central1`)
 *   `GOOGLE_GENAI_USE_VERTEXAI`: `true`로 설정 시 Vertex AI 엔드포인트를 사용합니다.
 
-### 4.2 Vertex AI 및 ADC (Application Default Credentials) 인증
-Google Cloud Vertex AI(엔터프라이즈 환경)를 사용하기 위해 ADC 메커니즘을 통한 인증을 구성합니다.
+### 4.2 Vertex AI 및 ADC 인증
+Google Cloud Vertex AI(엔터프라이즈 환경)를 사용하기 위해 ADC(Application Default Credentials) 메커니즘을 통한 인증을 구성합니다.
 
 #### **4.2.1 ADC 인증 방식 선택**
 환경에 따라 에이전트가 인증 정보를 획득하는 방식을 결정합니다.
@@ -522,7 +523,7 @@ Google Cloud Vertex AI(엔터프라이즈 환경)를 사용하기 위해 ADC 메
     *   **명령어**: `gcloud auth application-default login` 을 실행하여 브라우저 로그인을 수행합니다.
     *   **장점**: 별도의 키 파일 관리 없이 안전하게 인증 정보를 유지할 수 있습니다.
 
-2.  **서비스 계정 키(Service Account Key) 인증 (서버/자동화용)**
+2.  **서비스 계정 키 인증 (서버/자동화용)**
     CI/CD 파이프라인이나 독립된 서버 환경에서 특정 권한을 가진 키 파일을 사용합니다.
     *   **설정**: 환경변수 `GOOGLE_APPLICATION_CREDENTIALS`에 발급받은 JSON 키 파일의 **절대 경로**를 지정합니다.
     ```bash
@@ -537,7 +538,7 @@ export GOOGLE_CLOUD_PROJECT="your-project-id"
 export GOOGLE_CLOUD_LOCATION="global"
 ```
 
-### 4.3 settings.json을 통한 정밀 제어 및 Fallback
+### 4.3 settings.json을 통한 정밀 제어 및 Fallback 설정
 인증 유형을 고정하거나 환경변수가 누락되었을 때의 동작을 제어할 수 있습니다.
 
 ```json
@@ -556,7 +557,7 @@ export GOOGLE_CLOUD_LOCATION="global"
 *   **useExternal**: 외부 인증 플로우 사용 여부입니다.
 
 #### **GCP 프로젝트/리전 Fallback 로직**
-시스템 환경변수가 설정되지 않은 경우 에이전트는 `settings.json` 내의 값을 차선책(Fallback)으로 참조합니다.
+시스템 환경변수가 설정되지 않은 경우 에이전트는 `settings.json` 내의 값을 Fallback으로 참조합니다.
 *   환경변수 `GOOGLE_CLOUD_PROJECT` 부재 시 → `settings.json`의 해당 값 참조합니다.
 *   환경변수 `GOOGLE_CLOUD_LOCATION` 부재 시 → `settings.json`의 해당 값 참조합니다.
 
@@ -570,7 +571,7 @@ export GOOGLE_CLOUD_LOCATION="global"
 | 프로젝트·리전 기본값 | `.gemini/settings.json` | 환경변수 누락 시를 대비한 안전한 Fallback 수단입니다. |
 | 인증 유형 고정 정책 | `security.auth.enforcedType` | 관리자가 특정 인증 방식을 강제해야 할 때 사용합니다. |
 
-### 4.5 환경변수 기반 설정 (일시용/Bash 예시)
+### 4.5 환경변수 기반 설정 (일시용 예시)
 터미널에서 즉시 인증을 설정할 때 사용하는 명령어 세트입니다.
 
 ```bash
@@ -619,7 +620,7 @@ CLI는 다음 순서로 `.env` 파일을 탐색하며, 첫 번째 발견된 파�
 
 > **주의:** `.gemini/.env`를 사용하는 것이 권장됩니다. 일반 `.env`는 다른 개발 도구와 설정값이 충돌할 위험이 있습니다.
 
-### 5.2 전역(Global) .env 설정 예시
+### 5.2 전역 .env 설정 예시
 어떤 디렉토리에서 `gemini`를 실행해도 기본값으로 사용될 전역 설정입니다.
 
 ```bash
@@ -632,7 +633,7 @@ GOOGLE_CLOUD_LOCATION="us-central1"
 EOF
 ```
 
-### 5.3 프로젝트(Project) 전용 .env 설정 예시
+### 5.3 프로젝트 전용 .env 설정 예시
 프로젝트 루트에서 실행 시 전역 설정보다 우선하여 적용됩니다.
 
 ```bash
@@ -667,7 +668,7 @@ EOF
 
 ---
 
-## 6. Rules (규칙) - 항상 적용되는 가이드라인
+## 6. Rules - 항상 적용되는 가이드라인
 
 Rules는 예외 없이 모든 대화에 적용되는 지침(예: 코딩 컨벤션)입니다. 에이전트의 '헌법'과 같은 역할을 수행합니다.
 
@@ -675,17 +676,17 @@ Rules는 예외 없이 모든 대화에 적용되는 지침(예: 코딩 컨벤�
 
 | 항목 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
-| **메커니즘** | `GEMINI.md` 계층 구조가 Rules 역할을 수행합니다. | 전용 Rules 시스템을 별도로 운영합니다. |
+| **메커니즘** | `GEMINI.md` 계층 구조가 규칙 역할을 수행합니다. | 전용 규칙 시스템을 별도로 운영합니다. |
 | **저장 위치** | **전역:** `~/.gemini/GEMINI.md` / **프로젝트:** `.gemini/GEMINI.md` | **전역:** `~/.gemini/GEMINI.md` / **프로젝트:** `.agent/rules/*.md` |
 | **활성화 모드** | 항상 (자동) 로드됩니다. | **Always on** / **Manual** 중 선택 가능합니다. |
 | **설정 방법** | 파일을 직접 편집합니다. | UI(Agent Brain 패널) 또는 파일을 직접 편집합니다. |
 
-### 6.2 Antigravity Rules 상세
-Antigravity는 Rules의 활성화 레벨을 세밀하게 제어할 수 있습니다.
+### 6.2 Antigravity 규칙 상세
+Antigravity는 규칙의 활성화 레벨을 세밀하게 제어할 수 있습니다.
 
 *   **System Rules**: Google DeepMind가 정의한 불변 규칙입니다. (수정 불가)
 *   **Global Rules**: 모든 프로젝트에 공통으로 적용되는 개인 설정입니다.
-*   **프로젝트 Rules**: 특정 프로젝트에만 적용되며 `.agent/rules/` 폴더 내에 마크다운 파일로 저장합니다. 에이전트는 이를 프로젝트 고유의 '원칙'으로 인식합니다.
+*   **프로젝트 규칙**: 특정 프로젝트에만 적용되며 `.agent/rules/` 폴더 내에 마크다운 파일로 저장합니다. 에이전트는 이를 프로젝트 고유의 '원칙'으로 인식합니다.
 *   **시각적 관리**: IDE의 '에이전트 브레인' 패널에서 로드된 규칙을 실시간으로 확인하고 새로고침하거나 비활성화할 수 있습니다.
 
 ### 6.3 실전 Rules 작성 샘플
@@ -703,7 +704,7 @@ Antigravity는 Rules의 활성화 레벨을 세밀하게 제어할 수 있습니
 - **Hooks**: 모든 커스텀 훅은 `use` 접두사를 사용하고 `src/hooks` 경로에 배치합니다.
 
 ## 3. 문서화 및 주석
-- **JSDoc**: 모든 익스포트(export)되는 함수와 클래스에는 JSDoc 형식의 설명을 반드시 추가해야 합니다.
+- **JSDoc**: 모든 익스포트되는 함수와 클래스에는 JSDoc 형식의 설명을 반드시 추가해야 합니다.
 - **Why-Comments**: 코드의 작동 방식보다는 '왜' 이 로직이 필요한지를 설명하는 주석을 우선시합니다.
 
 ## 4. 제약 사항
@@ -726,14 +727,14 @@ Antigravity는 Rules의 활성화 레벨을 세밀하게 제어할 수 있습니
 - **Config Privacy**: 모든 환경 설정값은 절대 소스 코드에 직접 기입하지 않으며, 반드시 `config/` 디렉토리의 객체를 통해 간접 참조하도록 강제합니다.
 ```
 
-### 6.4. Rules가 설정된 Antigravity
+### 6.4. 규칙이 설정된 Antigravity
 ![Rules on Antigravity](img/img-01-antigravity-rules.png)
 
 ---
 
-## 7. Workflows (워크플로우) - 사용자 트리거 매크로
+## 7. Workflows - 사용자 트리거 매크로
 
-Workflows는 사용자가 `/명령어`로 호출하거나 자연어로 요청하는 다단계 레시피입니다.
+워크플로우는 사용자가 `/명령어`로 호출하거나 자연어로 요청하는 다단계 레시피입니다.
 
 ### 7.1 Antigravity Workflows (전용)
 **저장 위치:**
@@ -749,7 +750,7 @@ Workflows는 사용자가 `/명령어`로 호출하거나 자연어로 요청하
 | **Turbo Mode** | `// turbo`(개별 단계) 또는 `// turbo-all`(전체)로 명령을 자동 승인합니다. |
 
 #### 7.1.1 워크플로우 생성 방법 및 파일 형식
-워크플로우는 **YAML Frontmatter + Markdown 단계** 구조로 작성합니다.
+워크플로우는 **YAML 프론트매터 + 마크다운 단계** 구조로 작성합니다.
 
 ```markdown
 ---
@@ -764,7 +765,7 @@ description: Create a new React component with standard structure
 ```
 
 1.  **파일 생성**: `.agent/workflows/` 디렉토리에 `[기능명].md` 파일을 생성합니다.
-2.  **프론트매터(YAML) 설정**: 파일 최상단에 워크플로우의 목적을 정의합니다. 에이전트는 이 설명을 바탕으로 사용자의 요청과 워크플로우를 매칭합니다.
+2.  **프론트매터 설정**: 파일 최상단에 워크플로우의 목적을 정의합니다. 에이전트는 이 설명을 바탕으로 사용자의 요청과 워크플로우를 매칭합니다.
 3.  **단계별 지침 작성**: 에이전트가 수행할 동작을 번호가 매겨진 목록으로 작성합니다. 자연어 지침을 사용하며, 필요한 경우 특정 도구 실행을 명시할 수 있습니다.
 4.  **자동 실행 제어 (Turbo Mode)**: 사용자의 개별 승인 없이 단계를 진행하려면 지침 뒤에 `// turbo` 주석을 추가합니다.
 
@@ -802,28 +803,28 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 ```
 
 **자율적 실행 프로세스:**
-1.  **계획(Planning)**: 실행 전 전체 단계를 사용자에게 브리핑합니다.
+1.  **계획**: 실행 전 전체 단계를 사용자에게 브리핑합니다.
 2.  **단계별 수행**: 정의된 스텝에 따라 도구를 실행하고 코드를 수정합니다.
-3.  **검증(Verification)**: 각 단계 완료 후 컴파일 테스트나 Lint 체크를 통해 자율적으로 검증하며 실패 시 재시도합니다.
+3.  **검증**: 각 단계 완료 후 컴파일 테스트나 Lint 체크를 통해 자율적으로 검증하며 실패 시 재시도합니다.
 
 ### 7.2 Gemini CLI의 대응
-동일한 워크플로우 시스템은 없으나, **Custom Commands** (`.gemini/commands/*.toml`) 및 **Hooks** 시스템을 통해 유사한 다단계 자동화를 구현합니다.
+동일한 워크플로우 시스템은 없으나, **커스텀 커맨드** (`.gemini/commands/*.toml`) 및 **훅** 시스템을 통해 유사한 다단계 자동화를 구현합니다.
 
-### 7.3. Workflows가 설정된 Antigravity
-![Rules on Antigravity](img/img-02-antigravity-workflows.png)
+### 7.3. 워크플로우가 설정된 Antigravity
+![Workflows on Antigravity](img/img-02-antigravity-workflows.png)
 
-### 7.4 Rules와 Workflows의 차이 비교
-사용자는 작업의 성격에 따라 규칙(Rules)과 워크플로우(Workflows)를 적절히 선택하여 사용해야 합니다.
+### 7.4 규칙과 워크플로우의 차이 비교
+사용자는 작업의 성격에 따라 규칙과 워크플로우를 적절히 선택하여 사용해야 합니다.
 
 | 구분 | 규칙 (Rules) | 워크플로우 (Workflows) |
 |------|------------|---------------------|
 | **핵심 개념** | 에이전트의 **'원칙'과 '성격'**을 정의합니다. | 에이전트가 수행할 **'절차적 레시피'**를 정의합니다. |
 | **작동 방식** | 모든 대화에 상시 적용됩니다 (시스템 프롬프트). | 사용자 호출(`/명령어`) 또는 특정 조건 시 트리거됩니다. |
-| **실행 구조** | **정적(Static)**: 항상 준수해야 할 지침 목록입니다. | **동적(Procedural)**: 계획-수행-검증의 단계적 흐름입니다. |
+| **실행 구조** | **정적**: 항상 준수해야 할 지침 목록입니다. | **동적**: 계획-수행-검증의 단계적 흐름입니다. |
 | **주요 용도** | 코딩 컨벤션, 필수 라이브러리 제약, 언어 설정 등입니다. | 신규 컴포넌트 생성, 대규모 리팩토링, 배포 자동화 등입니다. |
 
-### 7.5 규칙(Rules)과 워크플로우(Workflows)의 상호 보완적 활용
-규칙과 워크플로우는 개별적인 기능이 아니라, 에이전트의 행동을 결정하는 **'지침(Rules)'**과 **'실행(Workflows)'**의 유기적인 결합체입니다.
+### 7.5 규칙과 워크플로우의 상호 보완적 활용
+규칙과 워크플로우는 개별적인 기능이 아니라, 에이전트의 행동을 결정하는 **'지침'**과 **'실행'**의 유기적인 결합체입니다.
 
 *   **워크플로우 (The What - 절차)**: 에이전트가 수행해야 할 **작업의 순서와 단계**를 정의합니다. (예: "A를 하고, B를 실행한 뒤, C를 커밋하십시오.")
 *   **규칙 (The How - 방법과 품질)**: 에이전트가 작업을 수행하는 과정에서 준수해야 할 **품질 기준과 제약 조건**을 정의합니다. (예: "모든 코드는 TDD 방식으로 작성하고, 명명 규칙은 CamelCase를 따르십시오.")
@@ -871,7 +872,7 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 ```
 
 **3. 상호작용의 결과**
-워크플로우가 **TDD 프로세스(선 테스트 후 개발)**라는 작업의 흐름을 강제한다면, 규칙은 **디자인 토큰 사용 및 접근성 준수**라는 기술적 품질을 강제합니다. 이를 통해 사용자는 복잡한 지시 없이도 조직의 표준에 완벽히 부합하는 UI 코드를 얻을 수 있습니다.
+워크플로우가 **TDD 프로세스**라는 작업의 흐름을 강제한다면, 규칙은 **디자인 토큰 사용 및 접근성 준수**라는 기술적 품질을 강제합니다. 이를 통해 사용자는 복잡한 지시 없이도 조직의 표준에 완벽히 부합하는 UI 코드를 얻을 수 있습니다.
 
 #### 활용 시나리오 3: "자동화된 릴리즈 및 변경 이력 관리"
 
@@ -887,7 +888,7 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 **2. 규칙 정의 (`.agent/rules/release-standards.md`)**
 ```markdown
 # 릴리즈 및 버저닝 규칙
-- **Versioning**: 반드시 Semantic Versioning(SemVer) 형식을 따라야 합니다.
+- **Versioning**: 반드시 SemVer 형식을 따라야 합니다.
 - **Changelog Style**: 단순 커밋 나열이 아닌, 'Feature', 'Fix', 'Breaking Changes'로 카테고리를 나누어 요약해야 합니다.
 - **Exclude**: 'chore', 'refactor' 성격의 커밋은 릴리즈 노트에서 제외합니다.
 ```
@@ -911,7 +912,7 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 | **Skills** | 에이전트 판단 시 | 자동 (의미 매칭) | 주문형 전문 지식 제공용입니다. |
 
 ### 8.2 SKILL.md 구조 (공통 표준)
-에이전트는 세션 시작 시 모든 Skill의 name/description만 색인하고, 사용자 의도와 시맨틱 매칭되면 그때 전체 SKILL.md를 로드합니다(Progressive Disclosure).
+에이전트는 세션 시작 시 모든 스킬의 이름과 설명만 색인하고, 사용자 의도와 시맨틱 매칭되면 그때 전체 SKILL.md를 로드합니다(Progressive Disclosure).
 
 ```yaml
 ---
@@ -934,7 +935,7 @@ description: Deploys current branch to staging environment.
 
 > **중요:** `description` 필드가 가장 중요합니다. 에이전트가 어떤 상황에서 이 스킬을 꺼내 쓸지 결정하는 기준이 되기 때문입니다.
 
-### 8.3 권장 스킬 폴더 구조 (Recommended Folder Structure)
+### 8.3 권장 스킬 폴더 구조
 `SKILL.md` 파일은 필수 구성 요소이며, 스킬의 자원을 효율적으로 관리하기 위해 다음과 같은 폴더 구조를 권장합니다.
 
 ```text
@@ -954,26 +955,26 @@ my-skill/
     *   **프로젝트:** `.agent/skills/`
     *   **IDE 시각화**: 사이드바에 아이콘과 함께 표시되며, `activate_skill`을 통해 자율적으로 로드 가능합니다.
 
-> **※ 전용 경로:** Gemini CLI의 스킬 디렉토리와 물리적으로 분리되어, Antigravity IDE가 독점적으로 관리하고 시각화(아이콘 표시 등)를 위해 사용하는 **전용(Dedicated) 공간**을 의미합니다. 이를 통해 터미널 환경과 IDE 환경의 스킬을 독립적으로 운영할 수 있습니다.
+> **※ 전용 경로:** Gemini CLI의 스킬 디렉토리와 물리적으로 분리되어, Antigravity IDE가 독점적으로 관리하고 시각화(아이콘 표시 등)를 위해 사용하는 **전용 공간**을 의미합니다. 이를 통해 터미널 환경과 IDE 환경의 스킬을 독립적으로 운영할 수 있습니다.
 
-### 8.5 Skill 관리 명령어 (Gemini CLI)
+### 8.5 스킬 관리 명령어 (Gemini CLI)
 터미널에서 다음 명령어를 통해 스킬을 관리할 수 있습니다.
 
 ```bash
-/skills list          # 전체 Skill 목록을 표시합니다.
+/skills list          # 전체 스킬 목록을 표시합니다.
 /skills link <path>   # 로컬 디렉토리 심볼릭 링크를 생성합니다.
-/skills disable <name> # 특정 Skill을 비활성화합니다.
-/skills enable <name>  # 특정 Skill을 재활성화합니다.
+/skills disable <name> # 특정 스킬을 비활성화합니다.
+/skills enable <name>  # 특정 스킬을 재활성화합니다.
 /skills reload         # 모든 스킬을 다시 스캔합니다.
 ```
 
 *   **활성화**: `settings.json`에서 `"experimental": { "skills": true }`로 설정합니다.
 *   **비활성화**: `"skills": { "disabled": ["skill-name"] }`로 설정합니다.
 
-### 8.6 고급 패턴: Skill 체이닝 & 오케스트레이션
-하나의 Skill이 다른 Skill을 순차적으로 호출하도록 설계할 수 있습니다. 예를 들어 `git-commit` 스킬이 `git-add` → `git-message` → `git-status` 스킬을 순차적으로 호출하는 오케스트레이터 역할을 수행할 수 있습니다. 또한 전역 규칙이 특정 스킬 사용을 강제하거나, 워크플로우가 여러 스킬을 조합하는 파이프라인 구성이 가능합니다.
+### 8.6 고급 패턴: 스킬 체이닝 및 오케스트레이션
+하나의 스킬이 다른 스킬을 순차적으로 호출하도록 설계할 수 있습니다. 예를 들어 `git-commit` 스킬이 `git-add` → `git-message` → `git-status` 스킬을 순차적으로 호출하는 오케스트레이터 역할을 수행할 수 있습니다. 또한 전역 규칙이 특정 스킬 사용을 강제하거나, 워크플로우가 여러 스킬을 조합하는 파이프라인 구성이 가능합니다.
 
-### 8.7 실전 스킬 샘플 (Practical Skill Samples)
+### 8.7 실전 스킬 샘플
 실제 프로젝트 환경에서 바로 활용할 수 있는 스킬 구성 사례입니다.
 
 #### **예시 1: `git-helper` (버전 관리 도우미)**
@@ -1037,13 +1038,13 @@ my-skill/
 
 ---
 
-## 9. MCP(Model Context Protocol) - 외부 통합
+## 9. MCP - 외부 통합
 
 에이전트가 외부 시스템(파일, DB, SaaS 등)과 통신하기 위한 표준 프로토콜입니다. **보안 정책 및 토큰을 에이전트가 아닌 MCP 서버 레벨에서 중앙 통제**할 수 있다는 구조적 장점이 있습니다.
 
 ### 9.1 Gemini CLI MCP 설정
 
-#### **전역 MCP 동작 설정 (mcp)**
+#### **전역 MCP 동작 설정**
 `settings.json`의 `mcp` 객체는 MCP 전체의 기본 동작 규칙을 정의합니다.
 
 ```json
@@ -1058,7 +1059,7 @@ my-skill/
 }
 ```
 
-#### **서버별 등록 예시 (mcpServers)**
+#### **서버별 등록 예시**
 개별 서버는 `mcpServers` 객체 내에 정의합니다.
 
 ```json
@@ -1148,7 +1149,7 @@ gemini mcp remove my-server
 Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 
 1.  **방법 1: MCP Store (마켓플레이스)**: Agent Panel 메뉴에서 원하는 서버를 선택하여 즉시 설치합니다. OAuth 승인 후 자동으로 활성화됩니다.
-2.  **방법 2: Custom JSON 설정 (수동)**: `~/.gemini/antigravity/mcp_config.json` 파일을 직접 편집합니다.
+2.  **방법 2: 커스텀 JSON 설정 (수동)**: `~/.gemini/antigravity/mcp_config.json` 파일을 직접 편집합니다.
     ```json
     {
       "servers": {
@@ -1161,7 +1162,7 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
       }
     }
     ```
-3.  **방법 3: Extensions (확장 프로그램)**: Snyk Studio와 같이 MCP 기능이 내장된 확장 프로그램을 통해 자동으로 등록합니다.
+3.  **방법 3: 확장 프로그램**: Snyk Studio와 같이 MCP 기능이 내장된 확장 프로그램을 통해 자동으로 등록합니다.
 
 #### **프로젝트별 MCP 설정 (Proxy 패턴)**
 현재 Antigravity는 프로젝트별 개별 MCP 설정을 직접 지원하지 않습니다. 이를 극복하기 위해 **"프록시 MCP 서버"** 패턴을 권장합니다.
@@ -1174,25 +1175,25 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 
 | 항목 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
-| **설정 파일** | `settings.json` 내 `mcpServers` | `mcp_config.json` (raw config) |
+| **설정 파일** | `settings.json` 내 `mcpServers` | `mcp_config.json` |
 | **설정 위치** | `.gemini/settings.json` | `~/.gemini/antigravity/mcp_config.json` |
 | **트랜스포트** | stdio, SSE, Streamable HTTP | stdio, SSE |
 | **UI 관리** | 없음 (CLI 전용) | MCP Store + 설정 패널 제공합니다. |
 
 ---
 
-## 10. Agent (에이전트) 아키텍처 및 특수 에이전트
+## 10. Agent 아키텍처 및 특수 에이전트
 
 양 플랫폼은 에이전트 구동 방식과 관리 환경에서 다음과 같은 아키텍처 차이를 보입니다.
 
 | 항목 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
 | **에이전트 유형** | 단일 대화형 에이전트 (순차 실행) | 멀티 에이전트 병렬 실행 시스템입니다. |
-| **관리 환경** | 터미널 세션 중심입니다. | 전용 Agent Manager 대시보드를 제공합니다. |
-| **서브에이전트(Subagent)** | 실험적 기능으로 제공됩니다. | 매니저 표면(Surface)을 통해 기본 지원합니다. |
-| **모델** | Gemini 2.5 Pro/Flash (무료 제공) | Gemini 3 모델 (역할별 특화) 입니다. |
+| **관리 환경** | 터미널 세션 중심입니다. | 전용 에이전트 매니저 대시보드를 제공합니다. |
+| **서브에이전트(Subagent)** | 실험적 기능으로 제공됩니다. | 매니저 표면을 통해 기본 지원합니다. |
+| **모델** | Gemini 2.5 Pro/Flash (Free), API키로 상위 모델 | Gemini 3 모델 (역할별 특화) 입니다. |
 | **컨텍스트 윈도우** | 1M (Free) ~ 2M (Enterprise) 토큰입니다. | 1M+ 토큰의 대용량 윈도우를 제공합니다. |
-| **Sandbox** | Docker/Podman/macOS 지원합니다. | IDE 내장 샌드박스를 사용합니다. |
+| **샌드박스** | Docker/Podman/macOS 지원합니다. | IDE 내장 샌드박스를 사용합니다. |
 
 ### 10.1 Gemini CLI 실험적 에이전트 설정
 터미널 환경에서 서브에이전트 기능을 활성화하려면 `settings.json`에서 다음과 같은 실험적 구성을 적용해야 합니다.
@@ -1214,17 +1215,17 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 ```
 
 #### **10.1.1 상세 설정 필드 가이드**
-*   **`maxNumTurns`**: 서브에이전트가 결론을 내기 위해 시도할 수 있는 최대 도구 실행 횟수입니다. 복잡한 분석일수록 높게 설정합니다.
-*   **`thinkingBudget`**: 모델의 추론(Thinking) 과정에 할당할 최대 토큰 수입니다.
-*   **`maxTimeMinutes`**: 분석 작업이 무한히 길어지지 않도록 제어하는 강제 종료 시간 제한입니다.
+*   **최대 시도 횟수 (`maxNumTurns`)**: 서브에이전트가 결론을 내기 위해 시도할 수 있는 최대 도구 실행 횟수입니다. 복잡한 분석일수록 높게 설정합니다.
+*   **추론 예산 (`thinkingBudget`)**: 모델의 추론 과정에 할당할 최대 토큰 수입니다.
+*   **최대 분석 시간 (`maxTimeMinutes`)**: 분석 작업이 무한히 길어지지 않도록 제어하는 강제 종료 시간 제한입니다.
 
-#### **10.1.2 실전 상호작용 시나리오 (Sample)**
+#### **10.1.2 실전 상호작용 시나리오**
 1.  **사용자**: "프로젝트 전체에서 에러 핸들링이 누락된 API 엔드포인트를 찾아줘."
 2.  **메인 에이전트**: 전문적인 분석을 위해 `codebase_investigator` 서브에이전트를 자율적으로 소환합니다.
 3.  **서브에이전트**: 프로젝트의 심볼 맵과 의존성을 정밀 추적하여 보고서를 작성합니다.
 4.  **결과 보고**: 메인 에이전트가 서브에이전트의 보고를 요약하여 사용자에게 최종 해결책을 제시합니다.
 
-### 10.2 특수 에이전트 (Subagents)
+### 10.2 Subagents
 메인 에이전트가 복잡한 작업을 위임하는 보조 엔진입니다.
 *   `codebase_investigator`: 프로젝트 의존성 구조 파악 및 심볼 추적을 수행합니다.
 *   `cli_help`: CLI 사용법 및 환경 설정 질문에 특화되어 있습니다.
@@ -1236,17 +1237,17 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 
 ---
 
-## 11. 세션 및 작업 관리 (Session & Tasks)
+## 11. 세션 및 작업 관리
 
 ### 11.1 세션 보존 및 복구 (Gemini CLI)
-*   **Checkpointing**: 코드 수정 직전 프로젝트 스냅샷과 대화 상태를 자동으로 저장합니다.
+*   **체크포인트(Checkpointing)**: 코드 수정 직전 프로젝트 스냅샷과 대화 상태를 자동으로 저장합니다.
 *   **복구**: `/restore` 명령으로 시점을 선택하고 롤백합니다.
 *   **재개**: `gemini --resume` 명령으로 과거 세션을 검색하고 재개합니다.
 
-### 11.2 Task Groups (Antigravity)
+### 11.2 작업 그룹 (Antigravity)
 대규모 리팩토링 등을 위한 논리적 작업 그룹 관리 도구입니다.
-*   **할 일(Todos) 연동**: 에이전트가 그룹 내 Todos를 완수하며 진행률을 시각적으로 보고합니다.
-*   **이정표(Milestone)**: 검증 성공 시 마일스톤을 기록하고 다음 단계 계획을 수립합니다.
+*   **할 일 연동**: 에이전트가 그룹 내 할 일을 완수하며 진행률을 시각적으로 보고합니다.
+*   **이정표(Milestone)**: 검증 성공 시 이정표를 기록하고 다음 단계 계획을 수립합니다.
 
 ---
 
@@ -1258,12 +1259,12 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 | **프로젝트 컨텍스트** | `.gemini/GEMINI.md` | `.agent/rules/*.md` | ⚠️ 경로·형식 상이합니다. |
 | **Agent Skills** | `.gemini/skills/` | `.agent/skills/` | ✅ **오픈 표준 호환** |
 | **전역 Skills** | `~/.gemini/skills/` | `~/.gemini/antigravity/skills/` | ⚠️ 경로 상이, 포맷 동일합니다. |
-| **Workflows** | Custom Commands | `.agent/workflows/` | ❌ Antigravity 전용입니다. |
+| **워크플로우** | Custom Commands | `.agent/workflows/` | ❌ Antigravity 전용입니다. |
 | **동작 설정** | `settings.json` (JSON) | IDE 설정 UI | ❌ 형식 불호환입니다. |
-| **MCP 서버** | `mcpServers` in settings | `mcp_config.json` | ⚠️ 기능 동일, 파일 형식 상이합니다. |
-| **Hooks** | `hooks.*` in settings | 없음 | ❌ Gemini CLI 전용입니다. |
+| **MCP 서버** | `mcpServers` | `mcp_config.json` | ⚠️ 기능 동일, 파일 형식 상이합니다. |
+| **훅** | `hooks.*` | 없음 | ❌ Gemini CLI 전용입니다. |
 | **Turbo/YOLO** | `-y` 플래그, `autoAccept` | `// turbo` 주석 | ⚠️ 개념 유사, 구현 상이합니다. |
-| **Auth (API 키)** | `.env` + `security.auth` | IDE UI + OS 환경변수 | ⚠️ 환경변수 공유 가능합니다. |
+| **인증 (API 키)** | `.env` + `security.auth` | IDE UI + OS 환경변수 | ⚠️ 환경변수 공유 가능합니다. |
 
 ---
 
@@ -1275,7 +1276,7 @@ Antigravity는 세 가지 방식으로 MCP를 관리합니다.
 ```
 ~/
 └── .gemini/
-    ├── .env                    # 전역 Auth (API 키, GCP 프로젝트 등)
+    ├── .env                    # 전역 인증 (API 키, GCP 프로젝트 등)
     ├── settings.json           # Gemini CLI 전역 설정 (MCP 서버 등)
     ├── GEMINI.md               # 전역 공통 컨텍스트 (양쪽 공유)
     ├── skills/                 # 전역 Agent Skills (CLI용)
@@ -1296,24 +1297,24 @@ my-project/
 │       └── deploy-staging/
 │           └── SKILL.md
 ├── .agent/                     # [Antigravity 전용 영역]
-│   ├── rules/                  # 프로젝트 Rules (코딩 스타일 등)
+│   ├── rules/                  # 프로젝트 규칙 (코딩 스타일 등)
 │   │   └── coding-style.md
-│   ├── workflows/              # 프로젝트 Workflows (자동화 레시피)
+│   ├── workflows/              # 프로젝트 워크플로우 (자동화 레시피)
 │   │   └── create_component.md
-│   └── skills/                 # 프로젝트 Skills
+│   └── skills/                 # 프로젝트 스킬
 │       └── deploy-staging -> ../../.gemini/skills/deploy-staging  # [심볼릭 링크로 동기화]
 └── ...
 ```
 
-> **💡 심볼릭 링크(Symbolic Link) 활용 팁**
+> **💡 심볼릭 링크 활용 팁**
 > 양 플랫폼에서 동일한 스킬을 중복 관리하지 않으려면, 한 곳에만 원본 폴더를 생성하고 다른 경로에서는 심볼릭 링크로 연결하는 것이 효율적입니다.
 > * **생성 명령어 예시 (Linux/macOS):**
 >   `ln -s ../../.gemini/skills/deploy-staging .agent/skills/deploy-staging`
 > * **효과:** 한 곳에서 `SKILL.md`를 수정하면 Gemini CLI와 Antigravity에 즉시 동시 반영됩니다.
 
 ### 13.2 실전 활용 팁
-1.  **환경 전환**: 터미널 작업 중 시각적 워크플로우나 Task 관리가 필요하면 Antigravity IDE로 전환하십시오. 설정이 공유되어 맥락이 유지됩니다.
-2.  **보안 우선**: `settings.json`에서 `sandbox`를 활성화하여 신뢰할 수 없는 코드 수정을 격리하십시오.
+1.  **환경 전환**: 터미널 작업 중 시각적 워크플로우나 작업 관리가 필요하면 Antigravity IDE로 전환하십시오. 설정이 공유되어 맥락이 유지됩니다.
+2.  **보안 우선**: `settings.json`에서 **샌드박스**를 활성화하여 신뢰할 수 없는 코드 수정을 격리하십시오.
 3.  **지침 최적화**: 에이전트의 답변 품질을 높이려면 `GEMINI.md`를 수정하고 `/memory refresh`를 실행하십시오.
 4.  **심볼릭 링크 활용**: `SKILL.md`를 양 플랫폼 경로 간 심볼릭 링크로 연결하여 중복 작성을 방지하십시오.
 5.  **CI/CD 통합**: 파이프라인 자동화가 필요하다면 Gemini CLI와 GitHub Actions를 조합하여 사용하는 것이 가장 유리합니다.
