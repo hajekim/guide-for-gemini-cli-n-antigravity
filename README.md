@@ -1,4 +1,4 @@
-# Gemini CLI와 Antigravity를 함께 쓰기 통합 설정 메뉴얼
+# Gemini CLI와 Antigravity를 함께 쓰기 통합 설정 매뉴얼
 
 > **작성일:** 2026-02-12  
 > **대상:** Gemini CLI (v0.3.x+), Google Antigravity IDE  
@@ -31,7 +31,7 @@
 
 ## 1. 개요
 
-Gemini CLI는 터미널 기반 AI 에이전트이고, Antigravity는 VSCode 포크 기반의 에이전트 중심 IDE입니다. 두 도구는 동일한 **Gemini 에이전트 코어** 엔진을 공유하며, 핵심적인 도구 시스템과 설정 로직은 호환되지만 사용자의 작업 환경에 따라 제공되는 인터페이스와 관리 방식에서 차이가 있습니다. 핵심은 **Agent Skills라는 오픈 표준([agentskills.io](agentskills.io))을 통해 양 플랫폼 간 상호호환이 가능하다는 점입니다.**
+Gemini CLI는 터미널 기반 AI 에이전트이고, Antigravity는 VSCode 포크 기반의 에이전트 중심 IDE입니다. 두 도구는 동일한 **Gemini 에이전트 코어** 엔진을 공유하며, 핵심적인 도구 시스템과 설정 로직은 호환되지만 사용자의 작업 환경에 따라 제공되는 인터페이스와 관리 방식에서 차이가 있습니다. 핵심은 **Agent Skills라는 오픈 표준([agentskills.io](https://agentskills.io))을 통해 양 플랫폼 간 상호호환이 가능하다는 점입니다.**
 
 | 항목 | Gemini CLI | Antigravity |
 |------|-----------|-------------|
@@ -443,12 +443,12 @@ settings.json은 **Gemini CLI 전용** 설정 체계입니다. Antigravity는 �
     "useRipgrep": true
   },
   "experimental": {
-    "skills": true,         // Agent Skills 활성화
-    "enableAgents": false,  // 서브에이전트 (YOLO 모드 경고)
+    "skills": true,
+    "enableAgents": false,
     "jitContext": false
   },
   "skills": {
-    "disabled": []          // 비활성화할 Skill 목록
+    "disabled": []
   },
   "hooks": {
     "enabled": false,
@@ -468,7 +468,7 @@ settings.json은 **Gemini CLI 전용** 설정 체계입니다. Antigravity는 �
 #### **[주요 설정 포인트 설명]**
 *   **일반 및 모델 (`general`, `model`)**: 최신 기능을 미리 사용해 볼 수 있도록 `previewFeatures`를 활성화하고, 최적의 성능을 위해 `gemini-2.5-pro` 모델을 세션 제한 없이 사용하도록 구성합니다.
 *   **컨텍스트 및 도구 (`context`, `tools`)**: 프로젝트의 핵심 지침인 `GEMINI.md`를 우선 로드하며, 보안을 위해 **Docker 샌드박스** 내에서 `git` 관련 도구만 명시적으로 허용하도록 설정하여 안전한 자동화를 도모합니다.
-*   **실험적 기능 및 스킬 (`experimental`, `skills`)**: 차세대 핵심 기능인 **Agent Skills**를 활성화하여 에이전트의 전문성을 높입니다. 단, 서브에이전트 기능은 예기치 못한 도구 실행을 방지하기 위해 비활성화 상태를 유지합니다.
+*   **실험적 기능 및 스킬 (`experimental`, `skills`)**: `experimental.skills: true`로 차세대 핵심 기능인 **Agent Skills**를 활성화하여 에이전트의 전문성을 높입니다. `experimental.enableAgents: false`는 예기치 못한 도구 실행을 방지하기 위해 서브에이전트(YOLO 모드) 기능을 비활성화합니다. `skills.disabled`에는 비활성화할 Skill 이름 목록을 입력합니다.
 *   **확장성 (`hooks`, `mcpServers`)**: 세션 시작 시 환경을 점검하거나 도구 실행 전후에 개입할 수 있는 `hooks` 시스템과, 외부 서비스를 연동할 수 있는 MCP 서버의 기본 구조를 포함하고 있습니다.
 
 ### 3.4 환경변수 참조 문법
@@ -540,7 +540,7 @@ Google Cloud Vertex AI(엔터프라이즈 환경)를 사용하기 위해 ADC(App
 #### **4.2.2 Vertex AI 환경변수 샘플**
 GCP 프로젝트 정보와 Vertex AI 사용 여부를 정의합니다.
 ```bash
-export GOOGLE_GENAI_USE_VERTEXAI=True
+export GOOGLE_GENAI_USE_VERTEXAI=true
 export GOOGLE_CLOUD_PROJECT="your-project-id"
 export GOOGLE_CLOUD_LOCATION="global"
 ```
@@ -565,8 +565,8 @@ export GOOGLE_CLOUD_LOCATION="global"
 
 #### **GCP 프로젝트/리전 Fallback 로직**
 시스템 환경변수가 설정되지 않은 경우 에이전트는 `settings.json` 내의 값을 Fallback으로 참조합니다.
-*   환경변수 `GOOGLE_CLOUD_PROJECT` 부재 시 → `settings.json`의 해당 값 참조합니다.
-*   환경변수 `GOOGLE_CLOUD_LOCATION` 부재 시 → `settings.json`의 해당 값 참조합니다.
+*   환경변수 `GOOGLE_CLOUD_PROJECT` 부재 시 → `settings.json`의 해당 값을 참조합니다.
+*   환경변수 `GOOGLE_CLOUD_LOCATION` 부재 시 → `settings.json`의 해당 값을 참조합니다.
 
 > **💡 인증 방식 리셋 팁:** 인증 방식이 꼬였을 때 `~/.gemini/settings.json`의 `security.auth.selectedType` 값을 지우거나 수정하여 초기화할 수 있습니다.
 
@@ -814,7 +814,7 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 ### 7.2 Gemini CLI의 대응
 동일한 워크플로우 시스템은 없으나, **커스텀 커맨드** (`.gemini/commands/*.toml`) 및 **훅** 시스템을 통해 유사한 다단계 자동화를 구현합니다.
 
-### 7.3. 워크플로우가 설정된 Antigravity
+### 7.3 워크플로우가 설정된 Antigravity
 ![Workflows on Antigravity](img/img-02-antigravity-workflows.png)
 
 ### 7.4 규칙과 워크플로우의 차이 비교
@@ -918,11 +918,11 @@ description: 새로운 API 라우트를 추가하고 관련 단위 테스트를 
 ### 8.2 SKILL.md 구조 (공통 표준)
 에이전트는 세션 시작 시 모든 스킬의 이름과 설명만 색인하고, 사용자 의도와 시맨틱 매칭되면 그때 전체 SKILL.md를 로드합니다(Progressive Disclosure).
 
-```yaml
+```markdown
 ---
 name: deploy-staging
-description: Deploys current branch to staging environment. 
-  Use when user asks to "deploy", "push to staging", 
+description: Deploys current branch to staging environment.
+  Use when user asks to "deploy", "push to staging",
   or "test on staging server".
 ---
 # Deploy to Staging
@@ -1077,7 +1077,7 @@ Gemini CLI는 설치 시 기본적으로 다음의 핵심 도구 세트를 제�
 **사용자**: "현재 폴더의 모든 `.py` 파일에서 'TODO' 주석이 포함된 라인을 찾아서 보고해줘."
 
 **에이전트의 내부 도구 호출 과정:**
-```json
+```text
 // 1. glob 도구를 사용하여 대상 파일 목록 확보
 tool_call: glob(pattern="**/*.py")
 // [결과]: ["main.py", "utils/helper.py"]
@@ -1112,14 +1112,16 @@ tool_call: search_file_content(pattern="TODO", include="**/*.py")
 ```json
 {
   "mcp": {
-    "enabled": true,
-    "serverCommand": "node",            // 공통 실행 커맨드 (예: node / uv / bun)
-    "allowedServers": ["local-fs", "github"],
-    "defaultTimeoutMs": 30000,          // 기본 응답 타임아웃
-    "logLevel": "info"                  // 로그 상세 수준
+    "serverCommand": "node",
+    "allowed": ["local-fs", "github"],
+    "excluded": []
   }
 }
 ```
+
+> `serverCommand`: MCP 서버의 공통 실행 런타임 (예: `node`, `uv`, `bun`)입니다.
+> `allowed`: 허용할 MCP 서버 이름 목록입니다.
+> `excluded`: 비활성화할 MCP 서버 이름 목록입니다.
 
 #### **서버별 등록 예시**
 개별 서버는 `mcpServers` 객체 내에 정의합니다.
@@ -1413,7 +1415,7 @@ if __name__ == "__main__":
 | 기능 | Gemini CLI | Code Assist Agent Mode (VS Code) | Code Assist Agent Mode (IntelliJ) |
 |------|-----------|----------------------------------|----------------------------------|
 | **전역 컨텍스트 로드** | ✅ 지원 (표준 경로 사용) | ✅ 지원 (CLI 설정 공유) | ❌ 미지원 (프로젝트 루트 우선) |
-| **프로젝트 루트 로드** | ✅ 지원 (`.git` 기준 탐색) | ✅ 지원 (워크스페이스 기준) | ✅ 지원 (`AGENT.md` 호환) |
+| **프로젝트 루트 로드** | ✅ 지원 (`.git` 기준 탐색) | ✅ 지원 (워크스페이스 기준) | ✅ 지원 (`GEMINI.md` 호환) |
 | **서브디렉토리 스캔** | ✅ 지원 (재귀적 탐색) | ✅ 지원 (파일 필터링 준수) | ❌ 미지원 |
 | **외부 파일 임포트** | ✅ `@file.md` 구문 지원 | ✅ 동일 구문 지원 | ❌ 미지원 |
 | **메모리 관리 명령** | ✅ `/memory` 커맨드 지원 | ✅ 대화창 내 커맨드 지원 | ❌ 미지원 |
@@ -1486,6 +1488,7 @@ Agent Mode와 Gemini CLI는 기술적 뿌리가 같기 때문에, **동일한 �
     ├── settings.json           # Gemini CLI 전역 설정 (MCP 서버 등)
     ├── GEMINI.md               # 전역 공통 컨텍스트 (양쪽 공유)
     ├── skills/                 # 전역 Agent Skills (CLI용)
+    ├── commands/               # Gemini CLI 커스텀 커맨드 (*.toml)
     ├── extensions/             # 전역 Extensions (CLI용)
     └── antigravity/
         ├── mcp_config.json     # Antigravity 전용 MCP 설정
@@ -1551,6 +1554,7 @@ my-project/
     ├── GEMINI.md                # 전역 규칙 (양측 공통 적용)
     ├── settings.json            # Gemini CLI 전역 설정 + MCP
     ├── skills/                  # 전역 Agent Skills (공용 원본)
+    ├── commands/                # Gemini CLI 커스텀 커맨드 (*.toml)
     └── antigravity/
         ├── mcp_config.json      # Antigravity 전용 MCP 설정
         └── skills/              # Antigravity용 Skills 링크
